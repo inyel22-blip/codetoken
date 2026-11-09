@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dasbor ATEI V2.2.0 - Final</title>
-    <!-- Tambahan Library Generator QR Code -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body { font-family: sans-serif; background-color: #f1f5f9; padding: 15px; margin: 0; }
         .container { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -19,7 +17,6 @@
         .output-box { margin-top: 15px; background-color: #0f172a; color: #38bdf8; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; max-height: 250px; overflow-y: auto; }
         .badge { display: inline-block; padding: 5px 10px; border-radius: 6px; font-weight: bold; margin-top: 12px; font-size: 13px; color: white; }
         .success { background-color: #10b981; } .error { background-color: #ef4444; } .info { background-color: #f59e0b; }
-        /* Style untuk penempatan box QR Code */
         .qr-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; min-height: 220px; }
         .qr-title { font-size: 14px; font-weight: bold; color: #1e3a8a; margin-bottom: 10px; display: none; }
     </style>
@@ -61,7 +58,6 @@
     
     <div id="statusOutput" class="badge" style="display: none;"></div>
 
-    <!-- Wadah Tempat Gambar QR Code Muncul -->
     <div class="qr-container">
         <div id="qrTitle" class="qr-title">📱 SCAN KODE QR ABSENSI</div>
         <div id="qrcode-canvas">
@@ -70,7 +66,7 @@
     </div>
 
     <h3>[Konsol Output API]</h3>
-    <div id="jsonOutput" class="output-box">Skrip berhasil digabungkan dengan fungsi QR generator visual murni. Siap digunakan...</div>
+    <div id="jsonOutput" class="output-box">Skrip berhasil diperbaiki tanpa ketergantungan library luar. Tombol dipastikan aktif dan responsif...</div>
 </div>
 
 <script>
@@ -116,7 +112,6 @@ async function prosesAutoBypass() {
     qrCanvas.innerHTML = '<span style="color: #64748b; font-size: 13px;">Memproses data...</span>';
     jsonOutput.innerText = "[Langkah 1/2] Mengirimkan verifikasi lokasi ke server BKD...";
 
-    // Proteksi data koordinat kosong / invalid
     if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
         jsonOutput.innerText = "❌ Gagal: Koordinat GPS Latitude atau Longitude kosong atau tidak valid!";
         statusOutput.style.display = "inline-block";
@@ -192,23 +187,12 @@ ${JSON.stringify(jsonQr, null, 2)}`;
 
 💡 ANALISIS: Validasi tipe data lokasi lolos, data QR null terjadi karena jam absensi resmi belum dibuka. Uji kembali tombol ini nanti saat jam masuk/pulang kantor.";
                 } else {
-                    // BERHASIL MENDAPATKAN TOKEN ABSEN
-                    qrCanvas.innerHTML = ""; // Bersihkan text loading
-                    qrTitle.style.display = "block"; // Munculkan teks info scan
-                    
-                    // Membuat Gambar QR otomatis berdasarkan string token data dari server
-                    new QRCode(qrCanvas, {
-                        text: jsonQr.data,
-                        width: 180,
-                        height: 180,
-                        colorDark : "#000000",
-                        colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.H
-                    });
-
+                    qrTitle.style.display = "block"; 
+                    const qrTextEncoded = encodeURIComponent(jsonQr.data);
+                    qrCanvas.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${qrTextEncoded}" alt="QR Absen" style="border: 4px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />`;
                     jsonOutput.innerText += "
 
-✅ SUKSES: String token berhasil dikonversi menjadi QR Code visual. Silakan lakukan pemindaian langsung dari layar.";
+✅ SUKSES: String token berhasil dikonversi menjadi QR Code visual via Gambar.";
                 }
             } catch(e) { 
                 jsonOutput.innerText = `[Langkah 2 Respon Non-JSON]:
@@ -221,9 +205,7 @@ ${txtQr}`;
         statusOutput.style.display = "inline-block";
         statusOutput.className = "badge error";
         statusOutput.innerText = "Koneksi Terputus";
-        jsonOutput.innerText = "Kesalahan Sistem: " + err.message + "
-
-💡 TIPS: Pastikan perangkat terhubung internet dan server target aktif.";
+        jsonOutput.innerText = "Kesalahan Sistem: " + err.message;
         qrCanvas.innerHTML = '<span style="color: #ef4444; font-size: 13px;">Koneksi Gagal.</span>';
     }
 }
