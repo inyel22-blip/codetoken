@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dasbor ATEI V2.2.0 - Final</title>
+    <title>Dasbor ATEI V2.3.0 - Multi-Status (Fixed)</title>
     <style>
         body { font-family: sans-serif; background-color: #f1f5f9; padding: 15px; margin: 0; }
         .container { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         h2 { color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; font-size: 18px; }
         .form-group { margin-bottom: 12px; }
         label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 13px; color: #475569; }
-        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: monospace; font-size: 13px; background-color: #f8fafc; }
+        input[type="text"], select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: monospace; font-size: 13px; background-color: #f8fafc; }
+        select { font-family: sans-serif; font-weight: bold; color: #1e3a8a; cursor: pointer; }
         .gps-box { display: flex; gap: 10px; margin-bottom: 12px; }
         button { background-color: #2563eb; color: white; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; width: 100%; margin-top: 5px; }
         .btn-gps { background-color: #0f766e; margin-bottom: 10px; }
@@ -21,7 +22,7 @@
 </head>
 <body>
 <div class="container">
-    <h2>🛠️ Dasbor ATEI BARTIM (Gabungan Kredensial Final)</h2>
+    <h2>🛠️ Dasbor ATEI BARTIM (Otomatisasi Parameter)</h2>
     
     <div class="gps-box">
         <div style="flex: 1;">
@@ -35,6 +36,19 @@
     </div>
     <button class="btn-gps" onclick="ambilGPSBrowser()">📍 Ambil GPS Browser Terkini</button>
 
+    <!-- Dropdown Parameter Tambahan Status -->
+    <div class="form-group">
+        <label>Status Absensi:</label>
+        <select id="absenStatus">
+            <option value="masuk">🌅 ABSEN MASUK (Pagi)</option>
+            <option value="pulang" selected>🌇 ABSEN PULANG (Sore)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>User ID:</label>
+        <input type="text" id="userId" value="2682">
+    </div>
     <div class="form-group">
         <label>Authorization Token:</label>
         <input type="text" id="apiToken" value="419618|NOOuuJTcJKmV2dv6omw69OXA5goCnW8H6aJuOKpjb06f986c">
@@ -52,7 +66,7 @@
     
     <div id="statusOutput" class="badge" style="display: none;"></div>
     <h3>[Konsol Output API]</h3>
-    <div id="jsonOutput" class="output-box">Skrip berhasil digabungkan dengan modifikasi data angka lokasi murni. Siap digunakan...</div>
+    <div id="jsonOutput" class="output-box">Skrip dinamis status diaktifkan. Silakan pilih menu Masuk/Pulang dan jalankan skrip...</div>
 </div>
 
 <script>
@@ -90,17 +104,20 @@ async function prosesAutoBypass() {
     const statusOutput = document.getElementById('statusOutput');
     const lat = document.getElementById('lat').value.trim();
     const lng = document.getElementById('lng').value.trim();
+    const uid = document.getElementById('userId').value.trim();
+    const statusAbsen = document.getElementById('absenStatus').value; // Mengambil data pilihan dropdown
     
     statusOutput.style.display = "none";
-    jsonOutput.innerText = "[Langkah 1/2] Mengirimkan verifikasi lokasi ke server BKD...";
+    jsonOutput.innerText = `[Langkah 1/2] Mengirimkan verifikasi lokasi (${statusAbsen.toUpperCase()}) ke server BKD...`;
 
     try {
         const resLoc = await fetch("https://api-absen.baritotimurkab.go.id/public/api/user/verifikasi_loc", {
             method: 'POST',
             headers: dapatkanHeader(),
             body: JSON.stringify({ 
-                "latitude": parseFloat(lat), 
-                "longitude": parseFloat(lng) 
+                "id": parseInt(uid),
+                "latitude": lat.toString(), 
+                "longitude": lng.toString() 
             })
         });
 
@@ -111,7 +128,7 @@ async function prosesAutoBypass() {
             const jsonLoc = JSON.parse(txtLoc);
             if (resLoc.ok) {
                 statusLocSukses = true;
-                jsonOutput.innerText = "[Langkah 1 Sukses] Lokasi dikunci oleh server.\n\n[Langkah 2/2] Menarik kode token QR otomatis...";
+                jsonOutput.innerText = `[Langkah 1 Sukses] Lokasi dikunci oleh server.\n\nRespons Server:\n${JSON.stringify(jsonLoc, null, 2)}\n\n[Langkah 2/2] Menarik kode token QR untuk status: ${statusAbsen.toUpperCase()}...`;
             } else {
                 jsonOutput.innerText = `[Langkah 1 Gagal] Server menolak permintaan:\n${JSON.stringify(jsonLoc, null, 2)}`;
                 statusOutput.style.display = "inline-block";
@@ -128,7 +145,8 @@ async function prosesAutoBypass() {
         }
 
         if (statusLocSukses) {
-            const resQr = await fetch("https://api-absen.baritotimurkab.go.id/public/api/user/generate-token-qr", { 
+            // MENYUNTIKKAN PARAMETER QUERY DARI DROPDOWN SECARA OTOMATIS
+            const resQr = await fetch(`https://api-absen.baritotimurkab.go.id/public/api/user/generate-token-qr?status=${statusAbsen}`, { 
                 method: 'GET', 
                 headers: dapatkanHeader() 
             });
@@ -144,7 +162,7 @@ async function prosesAutoBypass() {
                 if (jsonQr.data === null) {
                     statusOutput.className = "badge info";
                     statusOutput.innerText = "HTTP 200 (Data Null)";
-                    jsonOutput.innerText += "\n\n💡 ANALISIS: Validasi tipe data lokasi lolos, data QR null terjadi karena jam absensi resmi belum dibuka. Uji kembali tombol ini nanti sore saat jam pulang kantor.";
+                    jsonOutput.innerText += `\n\n💡 ANALISIS: Validasi perangkat & lokasi sukses. Data QR berstatus null karena jam presensi ${statusAbsen} belum dibuka secara penuh oleh sistem BKD setempat, atau ada kemungkinan selisih waktu 1-3 menit dengan jam server pusat.`;
                 }
             } catch(e) { 
                 jsonOutput.innerText = `[Langkah 2 Respon Non-JSON]:\n${txtQr}`; 
@@ -155,7 +173,7 @@ async function prosesAutoBypass() {
         statusOutput.style.display = "inline-block";
         statusOutput.className = "badge error";
         statusOutput.innerText = "Koneksi Terputus";
-        jsonOutput.innerText = "Kesalahan Sistem: " + err.message + "\n\n💡 TIPS: Pastikan Anda membuka file ini menggunakan browser Google Chrome agar pembatasan Javascript tidak terjadi.";
+        jsonOutput.innerText = `❌ Terjadi kesalahan jaringan internal atau CORS policy: ${err.message}`;
     }
 }
 </script>
