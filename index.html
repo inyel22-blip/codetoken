@@ -66,7 +66,7 @@
     </div>
 
     <h3>[Konsol Output API]</h3>
-    <div id="jsonOutput" class="output-box">Skrip berhasil diperbaiki tanpa ketergantungan library luar. Tombol dipastikan aktif dan responsif...</div>
+    <div id="jsonOutput" class="output-box">Menunggu Perintah Tombol...</div>
 </div>
 
 <script>
@@ -138,12 +138,9 @@ async function prosesAutoBypass() {
             const jsonLoc = JSON.parse(txtLoc);
             if (resLoc.ok) {
                 statusLocSukses = true;
-                jsonOutput.innerText = "[Langkah 1 Sukses] Lokasi dikunci oleh server.
-
-[Langkah 2/2] Menarik kode token QR otomatis...";
+                jsonOutput.innerText = "[Langkah 1 Sukses] Lokasi dikunci oleh server.\n\n[Langkah 2/2] Menarik kode token QR otomatis...";
             } else {
-                jsonOutput.innerText = `[Langkah 1 Gagal] Server menolak permintaan:
-${JSON.stringify(jsonLoc, null, 2)}`;
+                jsonOutput.innerText = `[Langkah 1 Gagal] Server menolak permintaan:\n${JSON.stringify(jsonLoc, null, 2)}`;
                 statusOutput.style.display = "inline-block";
                 statusOutput.className = "badge error";
                 statusOutput.innerText = `HTTP ${resLoc.status}`;
@@ -151,10 +148,7 @@ ${JSON.stringify(jsonLoc, null, 2)}`;
                 return;
             }
         } catch(e) {
-            jsonOutput.innerText = `[Langkah 1 Respon Eror Server]:
-${txtLoc}
-
-💡 Catatan: Jika memunculkan Server Error 500 di luar jam kerja, sistem server backend sedang menutup gerbang karena jadwal absen belum aktif.`;
+            jsonOutput.innerText = `[Langkah 1 Respon Eror Server]:\n${txtLoc}\n\n💡 Catatan: Jika memunculkan Server Error 500 di luar jam kerja, sistem server backend sedang menutup gerbang karena jadwal absen belum aktif.`;
             statusOutput.style.display = "inline-block";
             statusOutput.className = "badge error";
             statusOutput.innerText = `HTTP ${resLoc.status}`;
@@ -175,28 +169,21 @@ ${txtLoc}
             const txtQr = await resQr.text();
             try { 
                 const jsonQr = JSON.parse(txtQr);
-                jsonOutput.innerText = `[Urutan Selesai] Hasil Struktur Data QR:
-
-${JSON.stringify(jsonQr, null, 2)}`;
+                jsonOutput.innerText = `[Urutan Selesai] Hasil Struktur Data QR:\n:\n${JSON.stringify(jsonQr, null, 2)}`;
                 
                 if (jsonQr.data === null || !jsonQr.data) {
                     statusOutput.className = "badge info";
                     statusOutput.innerText = "HTTP 200 (Data Null)";
                     qrCanvas.innerHTML = '<span style="color: #f59e0b; font-size: 13px; text-align:center;">Data QR Null.<br>Jadwal jendela absensi resmi belum dibuka.</span>';
-                    jsonOutput.innerText += "
-
-💡 ANALISIS: Validasi tipe data lokasi lolos, data QR null terjadi karena jam absensi resmi belum dibuka. Uji kembali tombol ini nanti saat jam masuk/pulang kantor.";
+                    jsonOutput.innerText += "\n\n💡 ANALISIS: Validasi tipe data lokasi lolos, data QR null terjadi karena jam absensi resmi belum dibuka. Uji kembali tombol ini nanti saat jam masuk/pulang kantor.";
                 } else {
                     qrTitle.style.display = "block"; 
                     const qrTextEncoded = encodeURIComponent(jsonQr.data);
                     qrCanvas.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${qrTextEncoded}" alt="QR Absen" style="border: 4px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />`;
-                    jsonOutput.innerText += "
-
-✅ SUKSES: String token berhasil dikonversi menjadi QR Code visual via Gambar.";
+                    jsonOutput.innerText += "\n\n✅ SUKSES: String token berhasil dikonversi menjadi QR Code visual via Gambar.";
                 }
             } catch(e) { 
-                jsonOutput.innerText = `[Langkah 2 Respon Non-JSON]:
-${txtQr}`; 
+                jsonOutput.innerText = `[Langkah 2 Respon Non-JSON]:\n${txtQr}`; 
                 qrCanvas.innerHTML = '<span style="color: #ef4444; font-size: 13px;">Format Data Respon Gagal.</span>';
             }
         }
