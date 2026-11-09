@@ -120,10 +120,10 @@ function perbaruiStatusJadwalWaktu() {
     const jamSekarang = new Date().getHours() + (new Date().getMinutes() / 60);
     
     if (jamSekarang >= ATURAN_LOG.in_start && jamSekarang < ATURAN_LOG.in_end) {
-        lblMode.innerHTML = `🟢 ABSEN MASUK AKTIF (Token: ${ATURAN_LOG.qr_in})`;
+        lblMode.innerHTML = "🟢 ABSEN MASUK AKTIF (Token: " + ATURAN_LOG.qr_in + ")";
         lblMode.style.color = "#10b981";
     } else if (jamSekarang >= ATURAN_LOG.out_start && jamSekarang < ATURAN_LOG.out_end) {
-        lblMode.innerHTML = `🔵 ABSEN PULANG AKTIF (Token: ${ATURAN_LOG.qr_out})`;
+        lblMode.innerHTML = "🔵 ABSEN PULANG AKTIF (Token: " + ATURAN_LOG.qr_out + ")";
         lblMode.style.color = "#2563eb";
     } else {
         lblMode.innerHTML = "🔴 DI LUAR JADWAL ABSENSI RESMI";
@@ -203,20 +203,20 @@ async function prosesAutoBypass() {
             const jsonLoc = JSON.parse(txtLoc);
             if (resLoc.ok) {
                 statusLocSukses = true;
-                jsonOutput.innerText = `[Langkah 1 Sukses] Lokasi dikunci server dengan Token: ${tokenLokasiDinamis}.\n\n[Langkah 2/2] Menarik kode token QR otomatis...`;
+                jsonOutput.innerText = "[Langkah 1 Sukses] Lokasi dikunci server dengan Token: " + tokenLokasiDinamis + ".\n\n[Langkah 2/2] Menarik kode token QR otomatis...";
             } else {
-                jsonOutput.innerText = `[Langkah 1 Gagal] Server menolak permintaan:\n${JSON.stringify(jsonLoc, null, 2)}`;
+                jsonOutput.innerText = "[Langkah 1 Gagal] Server menolak permintaan:\n" + JSON.stringify(jsonLoc, null, 2);
                 statusOutput.style.display = "inline-block";
                 statusOutput.className = "badge error";
-statusOutput.innerText = HTTP ${resLoc.status};
+statusOutput.innerText = "HTTP " + resLoc.status;
 qrCanvas.innerHTML = 'Verifikasi Lokasi Ditolak.';
 return;
 }
 } catch(e) {
-jsonOutput.innerText = [Langkah 1 Respon Eror Server]:\n${txtLoc}\n\n💡 Catatan: Status 500 terjadi jika data token atau jam pemicu absensi dari server Pemda sedang dikunci/belum aktif.;
+jsonOutput.innerText = "[Langkah 1 Respon Eror Server]:\n" + txtLoc + "\n\n💡 Catatan: Status 500 terjadi jika data token atau jam pemicu absensi dari server Pemda sedang dikunci/belum aktif.";
 statusOutput.style.display = "inline-block";
 statusOutput.className = "badge error";
-statusOutput.innerText = HTTP ${resLoc.status};
+statusOutput.innerText = "HTTP " + resLoc.status;
 qrCanvas.innerHTML = 'Server Error / Jadwal Tutup.';
 return;
 }
@@ -226,12 +226,12 @@ method: 'GET',
 headers: dapatkanHeader()
 });
 statusOutput.style.display = "inline-block";
-statusOutput.innerText = HTTP: ${resQr.status};
+statusOutput.innerText = "HTTP: " + resQr.status;
 statusOutput.className = resQr.ok ? "badge success" : "badge error";
 const txtQr = await resQr.text();
 try {
 const jsonQr = JSON.parse(txtQr);
-jsonOutput.innerText = [Urutan Selesai] Hasil Struktur Data QR:\n\n${JSON.stringify(jsonQr, null, 2)};
+jsonOutput.innerText = "[Urutan Selesai] Hasil Struktur Data QR:\n\n" + JSON.stringify(jsonQr, null, 2);
 if (jsonQr.data === null || !jsonQr.data) {
 statusOutput.className = "badge info";
 statusOutput.innerText = "HTTP 200 (Data Null)";
@@ -240,12 +240,12 @@ Jadwal jendela absensi resmi belum dibuka.';
 } else {
 qrTitle.style.display = "block";
 const qrTextEncoded = encodeURIComponent(jsonQr.data);
-qrCanvas.innerHTML = <img src="https://qrserver.com{qrTextEncoded}" alt="QR Absen" style="border: 4px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />;
+qrCanvas.innerHTML = '';
 jsonOutput.innerText += "\n\n✅ SUKSES: String token berhasil dikonversi menjadi QR Code visual via Gambar.";
 simpanKeRiwayatLog(jsonQr.data);
 }
 } catch(e) {
-jsonOutput.innerText = [Langkah 2 Respon Non-JSON]:\n${txtQr};
+jsonOutput.innerText = "[Langkah 2 Respon Non-JSON]:\n" + txtQr;
 qrCanvas.innerHTML = 'Format Data Respon Gagal.';
 }
 }
@@ -272,10 +272,11 @@ if (dataLog.length === 0) {
 tableBody.innerHTML = 'Belum ada riwayat sukses tercatat.';
 return;
 }
-tableBody.innerHTML = dataLog.map(item => `
-${item.waktu} WIB
-${item.token}
-`).join("");
+let htmlOutput = "";
+for (let i = 0; i < dataLog.length; i++) {
+htmlOutput += "" + dataLog[i].waktu + " WIB" + dataLog[i].token + "";
+}
+tableBody.innerHTML = htmlOutput;
 }
 function hapusRiwayatLog() {
 if (confirm("Apakah Anda yakin ingin menghapus semua riwayat catatan log sukses?")) {
@@ -283,7 +284,6 @@ localStorage.removeItem("atei_qr_logs");
 tampilkanRiwayatLog();
 }
 }
-
 </script>
 </body>
 </html>
