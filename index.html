@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dasbor ATEI V2.2.0 - Final (Fixed)</title>
+    <title>Dasbor ATEI V2.2.0 - Final</title>
     <style>
         body { font-family: sans-serif; background-color: #f1f5f9; padding: 15px; margin: 0; }
         .container { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -35,11 +35,6 @@
     </div>
     <button class="btn-gps" onclick="ambilGPSBrowser()">📍 Ambil GPS Browser Terkini</button>
 
-    <!-- Menambahkan Input User ID Baru -->
-    <div class="form-group">
-        <label>User ID:</label>
-        <input type="text" id="userId" value="2682">
-    </div>
     <div class="form-group">
         <label>Authorization Token:</label>
         <input type="text" id="apiToken" value="419618|NOOuuJTcJKmV2dv6omw69OXA5goCnW8H6aJuOKpjb06f986c">
@@ -57,7 +52,7 @@
     
     <div id="statusOutput" class="badge" style="display: none;"></div>
     <h3>[Konsol Output API]</h3>
-    <div id="jsonOutput" class="output-box">Skrip berhasil diperbaiki dengan format parameter string murni dan integrasi User ID. Siap digunakan...</div>
+    <div id="jsonOutput" class="output-box">Skrip berhasil digabungkan dengan modifikasi data angka lokasi murni. Siap digunakan...</div>
 </div>
 
 <script>
@@ -95,20 +90,17 @@ async function prosesAutoBypass() {
     const statusOutput = document.getElementById('statusOutput');
     const lat = document.getElementById('lat').value.trim();
     const lng = document.getElementById('lng').value.trim();
-    const uid = document.getElementById('userId').value.trim();
     
     statusOutput.style.display = "none";
     jsonOutput.innerText = "[Langkah 1/2] Mengirimkan verifikasi lokasi ke server BKD...";
 
     try {
-        // PERBAIKAN UTAMA: Mengirimkan string murni koordinat dan menyertakan parameter ID Pengguna
         const resLoc = await fetch("https://api-absen.baritotimurkab.go.id/public/api/user/verifikasi_loc", {
             method: 'POST',
             headers: dapatkanHeader(),
             body: JSON.stringify({ 
-                "id": parseInt(uid),
-                "latitude": lat.toString(), 
-                "longitude": lng.toString() 
+                "latitude": parseFloat(lat), 
+                "longitude": parseFloat(lng) 
             })
         });
 
@@ -119,7 +111,7 @@ async function prosesAutoBypass() {
             const jsonLoc = JSON.parse(txtLoc);
             if (resLoc.ok) {
                 statusLocSukses = true;
-                jsonOutput.innerText = `[Langkah 1 Sukses] Lokasi dikunci oleh server.\n\nRespons Server:\n${JSON.stringify(jsonLoc, null, 2)}\n\n[Langkah 2/2] Menarik kode token QR otomatis...`;
+                jsonOutput.innerText = "[Langkah 1 Sukses] Lokasi dikunci oleh server.\n\n[Langkah 2/2] Menarik kode token QR otomatis...";
             } else {
                 jsonOutput.innerText = `[Langkah 1 Gagal] Server menolak permintaan:\n${JSON.stringify(jsonLoc, null, 2)}`;
                 statusOutput.style.display = "inline-block";
@@ -152,7 +144,7 @@ async function prosesAutoBypass() {
                 if (jsonQr.data === null) {
                     statusOutput.className = "badge info";
                     statusOutput.innerText = "HTTP 200 (Data Null)";
-                    jsonOutput.innerText += "\n\n💡 ANALISIS: Validasi tipe data lokasi lolos, data QR null terjadi karena jam absensi resmi belum dibuka. Uji kembali tombol ini nanti saat jendela jadwal absen masuk/pulang kantor telah dibuka.";
+                    jsonOutput.innerText += "\n\n💡 ANALISIS: Validasi tipe data lokasi lolos, data QR null terjadi karena jam absensi resmi belum dibuka. Uji kembali tombol ini nanti sore saat jam pulang kantor.";
                 }
             } catch(e) { 
                 jsonOutput.innerText = `[Langkah 2 Respon Non-JSON]:\n${txtQr}`; 
@@ -163,7 +155,7 @@ async function prosesAutoBypass() {
         statusOutput.style.display = "inline-block";
         statusOutput.className = "badge error";
         statusOutput.innerText = "Koneksi Terputus";
-        jsonOutput.innerText = "Kesalahan Sistem: " + err.message + "\n\n💡 TIPS: Pastikan Anda membuka file ini menggunakan browser Google Chrome.";
+        jsonOutput.innerText = "Kesalahan Sistem: " + err.message + "\n\n💡 TIPS: Pastikan Anda membuka file ini menggunakan browser Google Chrome agar pembatasan Javascript tidak terjadi.";
     }
 }
 </script>
