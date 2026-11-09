@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dasbor ATEI V2.2.0 - Final (Fixed)</title>
+    <title>Dasbor ATEI V2.2.0 - Final</title>
+    <!-- Tambahan Library Generator QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body { font-family: sans-serif; background-color: #f1f5f9; padding: 15px; margin: 0; }
         .container { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -17,6 +19,9 @@
         .output-box { margin-top: 15px; background-color: #0f172a; color: #38bdf8; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; max-height: 250px; overflow-y: auto; }
         .badge { display: inline-block; padding: 5px 10px; border-radius: 6px; font-weight: bold; margin-top: 12px; font-size: 13px; color: white; }
         .success { background-color: #10b981; } .error { background-color: #ef4444; } .info { background-color: #f59e0b; }
+        /* Style untuk penempatan box QR Code */
+        .qr-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; min-height: 220px; }
+        .qr-title { font-size: 14px; font-weight: bold; color: #1e3a8a; margin-bottom: 10px; display: none; }
     </style>
 </head>
 <body>
@@ -35,7 +40,6 @@
     </div>
     <button class="btn-gps" onclick="ambilGPSBrowser()">📍 Ambil GPS Browser Terkini</button>
 
-    <!-- Menambahkan Input User ID Baru -->
     <div class="form-group">
         <label>User ID:</label>
         <input type="text" id="userId" value="2682">
@@ -56,8 +60,17 @@
     <button onclick="prosesAutoBypass()">🔄 Jalankan Auto Lokasi + Ambil QR</button>
     
     <div id="statusOutput" class="badge" style="display: none;"></div>
+
+    <!-- Wadah Tempat Gambar QR Code Muncul -->
+    <div class="qr-container">
+        <div id="qrTitle" class="qr-title">📱 SCAN KODE QR ABSENSI</div>
+        <div id="qrcode-canvas">
+            <span style="color: #64748b; font-size: 13px;">QR Code akan muncul di sini setelah sukses...</span>
+        </div>
+    </div>
+
     <h3>[Konsol Output API]</h3>
-    <div id="jsonOutput" class="output-box">Skrip berhasil diperbaiki dengan format parameter string murni dan integrasi User ID. Siap digunakan...</div>
+    <div id="jsonOutput" class="output-box">Skrip berhasil digabungkan dengan fungsi QR generator visual murni. Siap digunakan...</div>
 </div>
 
 <script>
@@ -93,22 +106,33 @@ function dapatkanHeader() {
 async function prosesAutoBypass() {
     const jsonOutput = document.getElementById('jsonOutput');
     const statusOutput = document.getElementById('statusOutput');
+    const qrCanvas = document.getElementById('qrcode-canvas');
+    const qrTitle = document.getElementById('qrTitle');
     const lat = document.getElementById('lat').value.trim();
     const lng = document.getElementById('lng').value.trim();
-    const uid = document.getElementById('userId').value.trim();
     
     statusOutput.style.display = "none";
+    qrTitle.style.display = "none";
+    qrCanvas.innerHTML = '<span style="color: #64748b; font-size: 13px;">Memproses data...</span>';
     jsonOutput.innerText = "[Langkah 1/2] Mengirimkan verifikasi lokasi ke server BKD...";
 
+    // Proteksi data koordinat kosong / invalid
+    if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
+        jsonOutput.innerText = "❌ Gagal: Koordinat GPS Latitude atau Longitude kosong atau tidak valid!";
+        statusOutput.style.display = "inline-block";
+        statusOutput.className = "badge error";
+        statusOutput.innerText = "Error Input";
+        qrCanvas.innerHTML = '<span style="color: #ef4444; font-size: 13px;">Gagal mengunci lokasi.</span>';
+        return;
+    }
+
     try {
-        // PERBAIKAN UTAMA: Mengirimkan string murni koordinat dan menyertakan parameter ID Pengguna
         const resLoc = await fetch("https://api-absen.baritotimurkab.go.id/public/api/user/verifikasi_loc", {
             method: 'POST',
             headers: dapatkanHeader(),
             body: JSON.stringify({ 
-                "id": parseInt(uid),
-                "latitude": lat.toString(), 
-                "longitude": lng.toString() 
+                "latitude": parseFloat(lat), 
+                "longitude": parseFloat(lng) 
             })
         });
 
@@ -119,19 +143,27 @@ async function prosesAutoBypass() {
             const jsonLoc = JSON.parse(txtLoc);
             if (resLoc.ok) {
                 statusLocSukses = true;
-                jsonOutput.innerText = `[Langkah 1 Sukses] Lokasi dikunci oleh server.\n\nRespons Server:\n${JSON.stringify(jsonLoc, null, 2)}\n\n[Langkah 2/2] Menarik kode token QR otomatis...`;
+                jsonOutput.innerText = "[Langkah 1 Sukses] Lokasi dikunci oleh server.
+
+[Langkah 2/2] Menarik kode token QR otomatis...";
             } else {
-                jsonOutput.innerText = `[Langkah 1 Gagal] Server menolak permintaan:\n${JSON.stringify(jsonLoc, null, 2)}`;
+                jsonOutput.innerText = `[Langkah 1 Gagal] Server menolak permintaan:
+${JSON.stringify(jsonLoc, null, 2)}`;
                 statusOutput.style.display = "inline-block";
                 statusOutput.className = "badge error";
                 statusOutput.innerText = `HTTP ${resLoc.status}`;
+                qrCanvas.innerHTML = '<span style="color: #ef4444; font-size: 13px;">Verifikasi Lokasi Ditolak.</span>';
                 return;
             }
         } catch(e) {
-            jsonOutput.innerText = `[Langkah 1 Respon Eror Server]:\n${txtLoc}\n\n💡 Catatan: Jika memunculkan Server Error 500 di luar jam kerja, sistem server backend BKD sedang menolak akses masuk karena jadwal absen belum aktif.`;
+            jsonOutput.innerText = `[Langkah 1 Respon Eror Server]:
+${txtLoc}
+
+💡 Catatan: Jika memunculkan Server Error 500 di luar jam kerja, sistem server backend sedang menutup gerbang karena jadwal absen belum aktif.`;
             statusOutput.style.display = "inline-block";
             statusOutput.className = "badge error";
             statusOutput.innerText = `HTTP ${resLoc.status}`;
+            qrCanvas.innerHTML = '<span style="color: #ef4444; font-size: 13px;">Server Error / Jadwal Tutup.</span>';
             return;
         }
 
@@ -148,14 +180,40 @@ async function prosesAutoBypass() {
             const txtQr = await resQr.text();
             try { 
                 const jsonQr = JSON.parse(txtQr);
-                jsonOutput.innerText = `[Urutan Selesai] Hasil Struktur Data QR:\n\n${JSON.stringify(jsonQr, null, 2)}`;
-                if (jsonQr.data === null) {
+                jsonOutput.innerText = `[Urutan Selesai] Hasil Struktur Data QR:
+
+${JSON.stringify(jsonQr, null, 2)}`;
+                
+                if (jsonQr.data === null || !jsonQr.data) {
                     statusOutput.className = "badge info";
                     statusOutput.innerText = "HTTP 200 (Data Null)";
-                    jsonOutput.innerText += "\n\n💡 ANALISIS: Validasi tipe data lokasi lolos, data QR null terjadi karena jam absensi resmi belum dibuka. Uji kembali tombol ini nanti saat jendela jadwal absen masuk/pulang kantor telah dibuka.";
+                    qrCanvas.innerHTML = '<span style="color: #f59e0b; font-size: 13px; text-align:center;">Data QR Null.<br>Jadwal jendela absensi resmi belum dibuka.</span>';
+                    jsonOutput.innerText += "
+
+💡 ANALISIS: Validasi tipe data lokasi lolos, data QR null terjadi karena jam absensi resmi belum dibuka. Uji kembali tombol ini nanti saat jam masuk/pulang kantor.";
+                } else {
+                    // BERHASIL MENDAPATKAN TOKEN ABSEN
+                    qrCanvas.innerHTML = ""; // Bersihkan text loading
+                    qrTitle.style.display = "block"; // Munculkan teks info scan
+                    
+                    // Membuat Gambar QR otomatis berdasarkan string token data dari server
+                    new QRCode(qrCanvas, {
+                        text: jsonQr.data,
+                        width: 180,
+                        height: 180,
+                        colorDark : "#000000",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
+
+                    jsonOutput.innerText += "
+
+✅ SUKSES: String token berhasil dikonversi menjadi QR Code visual. Silakan lakukan pemindaian langsung dari layar.";
                 }
             } catch(e) { 
-                jsonOutput.innerText = `[Langkah 2 Respon Non-JSON]:\n${txtQr}`; 
+                jsonOutput.innerText = `[Langkah 2 Respon Non-JSON]:
+${txtQr}`; 
+                qrCanvas.innerHTML = '<span style="color: #ef4444; font-size: 13px;">Format Data Respon Gagal.</span>';
             }
         }
 
@@ -163,7 +221,10 @@ async function prosesAutoBypass() {
         statusOutput.style.display = "inline-block";
         statusOutput.className = "badge error";
         statusOutput.innerText = "Koneksi Terputus";
-        jsonOutput.innerText = "Kesalahan Sistem: " + err.message + "\n\n💡 TIPS: Pastikan Anda membuka file ini menggunakan browser Google Chrome.";
+        jsonOutput.innerText = "Kesalahan Sistem: " + err.message + "
+
+💡 TIPS: Pastikan perangkat terhubung internet dan server target aktif.";
+        qrCanvas.innerHTML = '<span style="color: #ef4444; font-size: 13px;">Koneksi Gagal.</span>';
     }
 }
 </script>
