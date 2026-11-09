@@ -186,7 +186,7 @@ async function prosesAutoBypass() {
     }
 
     try {
-        const resLoc = await fetch("https://api-absen.baritotimurkab.go.id/public/api/user/verifikasi_loc", {
+        const resLoc = await fetch("https://baritotimurkab.go.id", {
             method: 'POST',
             headers: dapatkanHeader(),
             body: JSON.stringify({ 
@@ -221,7 +221,7 @@ qrCanvas.innerHTML = 'Server Error / Jadwal Tutup.';
 return;
 }
 if (statusLocSukses) {
-const resQr = await fetch("https://api-absen.baritotimurkab.go.id/public/api/user/generate-token-qr", {
+const resQr = await fetch("baritotimurkab.go.id", {
 method: 'GET',
 headers: dapatkanHeader()
 });
@@ -283,6 +283,7 @@ localStorage.removeItem("atei_qr_logs");
 tampilkanRiwayatLog();
 }
 }
+
 </script>
 </body>
 </html>
