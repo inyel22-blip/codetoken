@@ -102,7 +102,7 @@ async function prosesAutoBypass() {
 
     try {
         // PERBAIKAN UTAMA: Mengirimkan string murni koordinat dan menyertakan parameter ID Pengguna
-        const resLoc = await fetch("https://https://api-absen.baritotimurkab.go.id/public/api/user/verifikasi_loc", {
+        const resLoc = await fetch("https://api-absen.baritotimurkab.go.id/public/api/user/verifikasi_loc", {
             method: 'POST',
             headers: dapatkanHeader(),
             body: JSON.stringify({ 
