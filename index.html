@@ -124,7 +124,7 @@ async function prosesAutoBypass() {
 
         // 2. Jika Langkah 1 Sukses, Lanjutkan Mengambil Token QR (GET)
         if (statusLocSukses) {
-            const resQr = await fetch("https://api-absen.baritotimurkab.go.id/public/api/user/generate-token-qr/", { 
+            const resQr = await fetch("https://api-absen.baritotimurkab.go.id/public/api/user/active-schedule/", { 
                 method: 'GET', 
                 headers: dapatkanHeader() 
             });
