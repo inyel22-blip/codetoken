@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dasbor ATEI V2.2.0 - Auto Loc</title>
+    <title>Dasbor ATEI V2.2.0</title>
     <style>
         body { font-family: sans-serif; background-color: #f1f5f9; padding: 15px; margin: 0; }
         .container { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -11,30 +11,19 @@
         .form-group { margin-bottom: 12px; }
         label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 13px; color: #475569; }
         input[type="text"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: monospace; font-size: 13px; background-color: #f8fafc; }
-        .gps-box { display: flex; gap: 10px; margin-bottom: 12px; }
-        button { background-color: #2563eb; color: white; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; width: 100%; margin-top: 5px; }
-        .btn-gps { background-color: #0f766e; margin-bottom: 10px; }
-        .output-box { margin-top: 15px; background-color: #0f172a; color: #38bdf8; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; max-height: 250px; overflow-y: auto; }
+        button { background-color: #2563eb; color: white; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; width: 100%; margin-top: 10px; }
+        .output-box { margin-top: 15px; background-color: #0f172a; color: #38bdf8; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; }
         .badge { display: inline-block; padding: 5px 10px; border-radius: 6px; font-weight: bold; margin-top: 12px; font-size: 13px; color: white; }
-        .success { background-color: #10b981; } .error { background-color: #ef4444; } .info { background-color: #f59e0b; }
+        .success { background-color: #10b981; } .error { background-color: #ef4444; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>🛠️ Dasbor ATEI BARTIM (Auto Verifikasi Lokasi)</h2>
-    
-    <div class="gps-box">
-        <div style="flex: 1;">
-            <label>Latitude:</label>
-            <input type="text" id="lat" value="-2.116357">
-        </div>
-        <div style="flex: 1;">
-            <label>Longitude:</label>
-            <input type="text" id="lng" value="115.16722">
-        </div>
+    <h2>🛠️ Dasbor ATEI BARTIM (Bypass V2.2.0)</h2>
+    <div class="form-group">
+        <label>URL Endpoint:</label>
+        <input type="text" id="apiUrl" value="https://api-absen.baritotimurkab.go.id/public/api">
     </div>
-    <button class="btn-gps" onclick="ambilGPSBrowser()">📍 Ambil GPS Browser Terkini</button>
-
     <div class="form-group">
         <label>Authorization Token:</label>
         <input type="text" id="apiToken" value="419618|NOOuuJTcJKmV2dv6omw69OXA5goCnW8H6aJuOKpjb06f986c">
@@ -47,111 +36,39 @@
         <label>x-install-id:</label>
         <input type="text" id="installId" value="9a1f07d0438a56dc871f65d10fe655b31c71b213a14eca12">
     </div>
-
-    <button onclick="prosesAutoBypass()">🔄 Jalankan Auto Lokasi + Ambil QR</button>
-    
+    <button onclick="ambilTokenQR()">🔄 Ambil QR Server (Auto Bypass)</button>
     <div id="statusOutput" class="badge" style="display: none;"></div>
     <h3>[Konsol Output API]</h3>
-    <div id="jsonOutput" class="output-box">Siap menjalankan urutan otomatis...</div>
+    <div id="jsonOutput" class="output-box">Siap melakukan penarikan otomatis harian...</div>
 </div>
-
 <script>
-function ambilGPSBrowser() {
-    const jsonOutput = document.getElementById('jsonOutput');
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            document.getElementById('lat').value = position.coords.latitude;
-            document.getElementById('lng').value = position.coords.longitude;
-            jsonOutput.innerText = "📍 Koordinat GPS browser berhasil diperbarui.";
-        }, function(error) {
-            jsonOutput.innerText = "❌ Gagal memuat GPS: " + error.message;
-        });
-    } else {
-        jsonOutput.innerText = "❌ Browser Anda tidak mendukung Geolocation.";
-    }
-}
-
 function dapatkanHeader() {
     return {
-        "Content-Type": "application/json", 
-        "Accept": "application/json", 
-        "user-agent": "Dart/3.9 (dart:io)",
-        "x-install-id": document.getElementById("installId").value.trim(), 
-        "x-device-platform": "android",
-        "x-app-installer": "com.android.vending", 
-        "x-app-package": "com.digitalnative.atei_bartim",
+        "Content-Type": "application/json", "Accept": "application/json", "user-agent": "Dart/3.9 (dart:io)",
+        "x-install-id": document.getElementById("installId").value.trim(), "x-device-platform": "android",
+        "x-app-installer": "com.android.vending", "x-app-package": "com.digitalnative.atei_bartim",
         "Authorization": "Bearer " + document.getElementById("apiToken").value.trim(),
         "x-device-id": document.getElementById("deviceId").value.trim()
     };
 }
-
-async function prosesAutoBypass() {
+async function ambilTokenQR() {
+    const url = document.getElementById('apiUrl').value.trim();
     const jsonOutput = document.getElementById('jsonOutput');
     const statusOutput = document.getElementById('statusOutput');
-    const lat = document.getElementById('lat').value.trim();
-    const lng = document.getElementById('lng').value.trim();
-    
+    jsonOutput.innerText = "Mengirim request dengan identitas Flutter...";
     statusOutput.style.display = "none";
-    jsonOutput.innerText = "[Langkah 1/2] Mengirimkan verifikasi lokasi ke server BKD...";
-
     try {
-        // 1. Eksekusi Tembak Verifikasi Lokasi Terlebih Dahulu (POST)
-        const resLoc = await fetch("https://api-absen.baritotimurkab.go.id/public/api/user/verifikasi_loc", {
-            method: 'POST',
-            headers: dapatkanHeader(),
-            body: JSON.stringify({ "latitude": lat, "longitude": lng })
-        });
-
-        const txtLoc = await resLoc.text();
-        let statusLocSukses = false;
-        
-        try {
-            const jsonLoc = JSON.parse(txtLoc);
-            if (resLoc.ok) {
-                statusLocSukses = true;
-                jsonOutput.innerText = "[Langkah 1 Sukses] Lokasi dikunci server.\n\n[Langkah 2/2] Menarik kode token QR otomatis...";
-            } else {
-                jsonOutput.innerText = `[Langkah 1 Gagal] Server menolak lokasi:\n${JSON.stringify(jsonLoc, null, 2)}`;
-                statusOutput.style.display = "inline-block";
-                statusOutput.className = "badge error";
-                statusOutput.innerText = `HTTP ${resLoc.status}`;
-                return;
-            }
-        } catch(e) {
-            jsonOutput.innerText = `[Langkah 1 Respon Non-JSON]:\n${txtLoc}`;
-            return;
-        }
-
-        // 2. Jika Langkah 1 Sukses, Lanjutkan Mengambil Token QR (GET)
-        if (statusLocSukses) {
-            const resQr = await fetch("https://api-absen.baritotimurkab.go.id/public/api/user/active-schedule/", { 
-                method: 'GET', 
-                headers: dapatkanHeader() 
-            });
-
-            statusOutput.style.display = "inline-block";
-            statusOutput.innerText = `HTTP: ${resQr.status}`;
-            statusOutput.className = resQr.ok ? "badge success" : "badge error";
-
-            const txtQr = await resQr.text();
-            try { 
-                const jsonQr = JSON.parse(txtQr);
-                jsonOutput.innerText = `[Urutan Selesai] Hasil Struktur Data QR:\n\n${JSON.stringify(jsonQr, null, 2)}`;
-                if (jsonQr.data === null) {
-                    statusOutput.className = "badge info";
-                    statusOutput.innerText = "HTTP 200 (Data Null)";
-                    jsonOutput.innerText += "\n\n💡 ANALISIS: Verifikasi lokasi lolos, data QR null murni karena diakses di luar jendela jam absensi resmi.";
-                }
-            } catch(e) { 
-                jsonOutput.innerText = `[Langkah 2 Respon Non-JSON]:\n${txtQr}`; 
-            }
-        }
-
+        const response = await fetch(url, { method: 'GET', headers: dapatkanHeader() });
+        statusOutput.style.display = "inline-block";
+        statusOutput.innerText = `HTTP: ${response.status}`;
+        statusOutput.className = response.ok ? "badge success" : "badge error";
+        const txt = await response.text();
+        try { jsonOutput.innerText = JSON.stringify(JSON.parse(txt), null, 2); } catch(e) { jsonOutput.innerText = txt; }
     } catch (err) {
         statusOutput.style.display = "inline-block";
         statusOutput.className = "badge error";
-        statusOutput.innerText = "Koneksi Terputus";
-        jsonOutput.innerText = "Kesalahan Sistem: " + err.message + "\n\n💡 TIPS: Selalu jalankan file ini di browser Google Chrome untuk menghindari pembatasan fungsi.";
+        statusOutput.innerText = "Koneksi Gagal / CORS";
+        jsonOutput.innerText = "Eror: " + err.message + "\n\n💡 TIPS: Buka file ini lewat browser Google Chrome, jangan lewat HTML Viewer bawaan HP.";
     }
 }
 </script>
