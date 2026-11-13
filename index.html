@@ -3,179 +3,632 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dasbor ATEI V2.3.0 - Multi-Status (Fixed)</title>
-    <style>
-        body { font-family: sans-serif; background-color: #f1f5f9; padding: 15px; margin: 0; }
-        .container { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        h2 { color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; font-size: 18px; }
+    <title>Dashboard API ATEI BARTIM v10</title>
+<style>
+  h1 {
+    color: #ff0000 !important;
+    font-weight: 800 !important;
+  }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; color: #1e293b; margin: 16px; }
+        .container { max-width: 960px; margin: auto; }
+        .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 18px; }
+        .config-card { background: #eff6ff; border-left: 5px solid #2563eb; }
+        h1 { color: #0f172a; margin-bottom: 5px; font-size: 22px; }
+        h2 { color: #1d4ed8; font-size: 17px; margin-top: 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+        .subtitle { color: #64748b; font-size: 13px; margin-bottom: 18px; word-break: break-word; }
+        .row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .row > div { flex: 1; min-width: 160px; }
         .form-group { margin-bottom: 12px; }
-        label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 13px; color: #475569; }
-        input[type="text"], select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: monospace; font-size: 13px; background-color: #f8fafc; }
-        select { font-family: sans-serif; font-weight: bold; color: #1e3a8a; cursor: pointer; }
-        .gps-box { display: flex; gap: 10px; margin-bottom: 12px; }
-        button { background-color: #2563eb; color: white; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; width: 100%; margin-top: 5px; }
-        .btn-gps { background-color: #0f766e; margin-bottom: 10px; }
-        .output-box { margin-top: 15px; background-color: #0f172a; color: #38bdf8; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; max-height: 250px; overflow-y: auto; }
-        .badge { display: inline-block; padding: 5px 10px; border-radius: 6px; font-weight: bold; margin-top: 12px; font-size: 13px; color: white; }
-        .success { background-color: #10b981; } .error { background-color: #ef4444; } .info { background-color: #f59e0b; }
+        label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; color: #334155; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        input[readonly] { background-color: #f8fafc; color: #475569; font-weight: 600; }
+        button { background: #2563eb; color: #fff; border: none; padding: 9px 15px; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 13px; margin-top: 4px; margin-right: 6px; }
+        button:hover { background: #1e40af; }
+        .btn-green { background: #059669; }
+        .btn-green:hover { background: #047857; }
+        .btn-purple { background: #7c3aed; }
+        .btn-purple:hover { background: #6d28d9; }
+        .btn-amber { background: #d97706; }
+        .btn-amber:hover { background: #b45309; }
+        .btn-cyan { background: #0284c7; }
+        .btn-cyan:hover { background: #0369a1; }
+        .btn-gray { background: #475569; }
+        .btn-gray:hover { background: #334155; }
+        .btn-red { background: #dc2626; padding: 6px 12px; font-size: 12px; margin: 0; }
+        .btn-red:hover { background: #b91c1c; }
+
+        .console-wrapper { margin-bottom: 20px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+        .console-header { background: #1e293b; color: #f8fafc; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+        .console-header strong { font-size: 13px; font-family: 'Consolas', monospace; color: #e2e8f0; }
+        .console { background: #0f172a; color: #38bdf8; padding: 15px; font-family: 'Consolas', monospace; font-size: 13px; white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; min-height: 110px; max-height: 350px; overflow-y: auto; }
+        .badge-date { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h2>🛠️ Dasbor ATEI BARTIM (Otomatisasi Parameter)</h2>
-    
-    <div class="gps-box">
-        <div style="flex: 1;">
-            <label>Latitude:</label>
-            <input type="text" id="lat" value="-2.116357">
+    <h1>🛠 Dasbor API ATEI BARTIM v10</h1>
+    <div class="subtitle">
+        API: <code>https://api-absen.baritotimurkab.go.id💫(by.inyel)💫</code> | 
+        Tanggal Otomatis: <span class="badge-date" id="displayTanggal"></span>
+    </div>
+
+    <!-- KONFIGURASI HEADER & AUTENTIKASI -->
+<div class="card config-card" style="display: none;">
+  <h2>🔑 Konfigurasi Token, Device ID & Web QR</h2>
+  <div class="row">
+                <input type="text" id="baseUrl" value="https://api-absen.baritotimurkab.go.id/public/api">
+            </div>
+            <div class="form-group">
+                <label>User ID Pegawai</label>
+                <input type="number" id="userId" value="2682">
+            </div>
+            <div class="form-group">
+                <label>ID Unit QR</label>
+                <input type="number" id="qrUnitId" value="31" oninput="updateQrUrl()">
+            </div>
+        <div class="form-group">
+            <label>URL Web QR Server (Wajib Login Web Dahulu)</label>
+            <input type="text" id="qrFullUrl" value="https://presensi.baritotimurkab.go.id/get_qr/31">
         </div>
-        <div style="flex: 1;">
-            <label>Longitude:</label>
-            <input type="text" id="lng" value="115.16722">
+        <div class="form-group">
+            <label>Authorization Bearer Token (API Mobile)</label>
+            <input type="text" id="bearerToken" value="YDZ0p6qlok7mURXSu7NOBlg5461R8EWL60wIsf4Z50742568">
         </div>
-    </div>
-    <button class="btn-gps" onclick="ambilGPSBrowser()">📍 Ambil GPS Browser Terkini</button>
-
-    <!-- Dropdown Parameter Tambahan Status -->
-    <div class="form-group">
-        <label>Status Absensi:</label>
-        <select id="absenStatus">
-            <option value="masuk">🌅 ABSEN MASUK (Pagi)</option>
-            <option value="pulang" selected>🌇 ABSEN PULANG (Sore)</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>User ID:</label>
-        <input type="text" id="userId" value="2682">
-    </div>
-    <div class="form-group">
-        <label>Authorization Token:</label>
-        <input type="text" id="apiToken" value="419618|NOOuuJTcJKmV2dv6omw69OXA5goCnW8H6aJuOKpjb06f986c">
-    </div>
-    <div class="form-group">
-        <label>x-device-id:</label>
-        <input type="text" id="deviceId" value="79c04db7067d7d2f">
-    </div>
-    <div class="form-group">
-        <label>x-install-id:</label>
-        <input type="text" id="installId" value="9a1f07d0438a56dc871f65d10fe655b31c71b213a14eca12">
+        <div class="row">
+            <div class="form-group">
+                <label>x-device-id (Aktif untuk API)</label>
+                <input type="text" id="deviceId" value="40622cf44ad36bb1">
+            </div>
+            <div class="form-group">
+                <label>Web device_id (Local Storage Login)</label>
+                <input type="text" id="webDeviceId" value="4ca74db83820d5de7a43991e5f75a1ba">
+            </div>
+            <div class="form-group">
+                <label>x-install-id</label>
+                <input type="text" id="installId" value="761392668472996190bfbe472b50c9b1626f413f41901ad8">
+            </div>
+        </div>
+        <button type="button" class="btn-gray" onclick="pakaiDeviceAndroid()">Gunakan Device ID Android</button>
+        <button type="button" class="btn-gray" onclick="pakaiDeviceWeb()">Gunakan Device ID Web</button>
+        <button type="button" class="btn-cyan" onclick="salinScriptConsole()">📋 Salin Script Ambil QR (Untuk Console Web)</button>
     </div>
 
-    <button onclick="prosesAutoBypass()">🔄 Jalankan Auto Lokasi + Ambil QR</button>
-    
-    <div id="statusOutput" class="badge" style="display: none;"></div>
-    <h3>[Konsol Output API]</h3>
-    <div id="jsonOutput" class="output-box">Skrip dinamis status diaktifkan. Silakan pilih menu Masuk/Pulang dan jalankan skrip...</div>
+    <!-- KONSOL LOG RESPON -->
+    <div class="console-wrapper">
+        <div class="console-header">
+            <strong>[Konsol Output API]</strong>
+            <button type="button" class="btn-red" onclick="clearConsole()">Bersihkan Konsol</button>
+        </div>
+        <div class="console" id="consoleBox">Siap. Gunakan tombol "Salin Script Ambil QR" di tab presensi.baritotimurkab.go.id setelah login, atau tempel token QR secara manual.</div>
+    </div>
+
+    <!-- 1. VERIFIKASI LOKASI, QR CHECK-IN & QR CHECK-OUT -->
+    <div class="card">
+        <h2>📍 1. Verifikasi Lokasi, Absen Masuk (QR In) & Absen Pulang (QR Out)</h2>
+        <div class="row">
+            <div class="form-group">
+                <label>Latitude</label>
+                <input type="text" id="lat" value="-2.116357">
+            </div>
+            <div class="form-group">
+                <label>Longitude</label>
+                <input type="text" id="lng" value="115.16722">
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label>Tanggal Otomatis (YYYY-MM-DD)</label>
+                <input type="text" id="autoTanggal" readonly>
+            </div>
+            <div class="form-group">
+                <label>Token Hash QR (Tempel Hasil QR / Otomatis)</label>
+                <input type="text" id="qrHash" value="34a08fca2e" oninput="updatePreviewQr()">
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label>Payload Siap Kirim: qr_in</label>
+                <input type="text" id="qrInPreview" readonly>
+            </div>
+            <div class="form-group">
+                <label>Payload Siap Kirim: qr_out</label>
+                <input type="text" id="qrOutPreview" readonly>
+            </div>
+        </div>
+
+        <button type="button" class="btn-cyan" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-bottom: 8px;" onclick="tempelQrClipboard()">📥 Tempel Token QR dari Clipboard</button>
+        <button type="button" class="btn-red" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-bottom: 8px;" onclick="ambilGpsAsli()">📍 Ambil GPS Browser</button>
+        <button type="button" class="btn-amber" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-bottom: 8px;" onclick="verifikasiLokasi()">1. Verifikasi Lokasi</button>
+        <button type="button" class="btn-green" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-bottom: 8px;" onclick="kirimQrIn()">2. Kirim Check-In</button>
+        <button type="button" class="btn-purple" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-bottom: 8px;" onclick="kirimQrOut()">3. Kirim Check-Out</button>
+        <button type="button" class="btn-cyan" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-bottom: 8px;" onclick="(async () => {
+    const baseUrl = val('baseUrl').replace(/\/$/, '');
+    const targetId = parseInt(val('qrUnitId'));
+    log(`➡️ GET ${baseUrl}/unit (Filter ID: ${targetId})`);
+    const res = await fetch(`${baseUrl}/unit`, { headers: getHeaders(true) });
+    const json = await res.json();
+    const list = Array.isArray(json) ? json : (json.data || []);
+    const ketemu = list.find(u => parseInt(u.id) === targetId);
+    log(`⬅️ Hasil Unit ID ${targetId}:\n` + JSON.stringify(ketemu || 'ID tidak ditemukan', null, 2));
+})()">🏢 Cek Detail 1 Unit Kerja (Filter ID)</button>
+        <button type="button" class="btn-amber" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-bottom: 8px;" onclick="(async () => {
+    const baseUrl = document.getElementById('baseUrl').value.trim();
+    const token = document.getElementById('bearerToken').value.trim();
+    const deviceId = document.getElementById('deviceId').value.trim();
+    const konsol = document.querySelector('.console');
+    const log = (t) => { if(konsol){ konsol.textContent += t + '\n'; konsol.scrollTop = konsol.scrollHeight; } };
+
+    const daftar = [
+        { u: '/user/pegawai_unit', m: 'POST' },
+        { u: '/user/unit', m: 'GET' },
+        { u: '/user/lokasi', m: 'GET' },
+        { u: '/user/get_lokasi', m: 'GET' },
+        { u: '/user/dalam_daerah', m: 'POST' },
+        { u: '/user/luar_daerah', m: 'POST' },
+        { u: '/user/tugas_dinas', m: 'POST' },
+        { u: '/user/izin_sehari', m: 'POST' },
+        { u: '/user/izin_more_day', m: 'POST' },
+        { u: '/user/izin', m: 'GET' },
+        { u: '/user/cuti', m: 'GET' },
+        { u: '/user/riwayat', m: 'GET' },
+        { u: '/user/history', m: 'GET' },
+        { u: '/user/rekap', m: 'POST' },
+        { u: '/user/absen_masuk', m: 'POST' },
+        { u: '/user/absen_pulang', m: 'POST' },
+        { u: '/unit', m: 'GET' }
+    ];
+
+    log('\n🔍 Memulai pemindaian ' + daftar.length + ' rute API...');
+    for (const item of daftar) {
+        try {
+            const opsi = {
+                method: item.m,
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'x-device-id': deviceId,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            };
+            if (item.m === 'POST') opsi.body = '{}';
+            const r = await fetch(baseUrl + item.u, opsi);
+            let statusKet = 'Tidak ada (404)';
+            if (r.status === 200) statusKet = '✅ AKTIF (200 OK)';
+            else if (r.status === 422) statusKet = '✅ AKTIF (Butuh data form)';
+            else if (r.status === 405) statusKet = '⚠️ ADA (Ganti metode GET/POST)';
+            else if (r.status === 401) statusKet = '🔒 Token kedaluwarsa';
+            log('[' + r.status + '] ' + item.m + ' ' + item.u + ' -> ' + statusKet);
+        } catch (e) {
+            log('[ERR] ' + item.u);
+        }
+    }
+    log('🏁 Pemindaian selesai.');
+})()">🔍 Scan Semua Rute API</button>
+        </div>
+
+    <!-- 2. CEK STATUS HARI INI, PROFIL & VERSI -->
+    <div class="card">
+        <h2>👤 2. Data Pegawai & Status Kehadiran Hari Ini</h2>
+        <button type="button" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-bottom: 8px;" onclick="cekToday()">Cek Absen Hari Ini</button>
+        <button type="button" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-bottom: 8px;" onclick="cekProfil()">Cek Profil Pegawai</button>
+        <button type="button" class="btn-gray" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-bottom: 8px;" onclick="cekVersi()">Cek Versi API</button>
+        <button type="button" class="btn-cyan" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-bottom: 8px;" onclick="cekSesiPerangkat()">🔑 Cek Sesi Perangkat</button>
+        <button type="button" class="btn-amber" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-top: 8px;" onclick="loginAmbilToken()">🔑 Login & Ambil Bearer Token Baru</button>
+        </div>
+
+    <!-- 3. REKAPITULASI & NILAI TPP -->
+    <div class="card">
+                <h2>📊 3. Rekapitulasi Bulanan & Rincian TPP</h2>
+        <div class="row">
+            <div class="form-group">
+                <label>Bulan (Otomatis)</label>
+                <input type="number" id="bulan" min="1" max="12">
+            </div>
+            <div class="form-group">
+                <label>Tahun (Otomatis)</label>
+                <input type="number" id="tahun">
+            </div>
+        </div>
+        <button type="button" class="btn-purple" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-bottom: 8px;" onclick="cekRekapV2()">Cek Rekap Bulanan V2</button>
+        <button type="button" class="btn-green" style="padding: 16px 24px; font-size: 16px; width: 100%; margin-bottom: 8px;" onclick="cekTpp()">Cek Nilai TPP</button
+     </div>
 </div>
 
 <script>
-function ambilGPSBrowser() {
-    const jsonOutput = document.getElementById('jsonOutput');
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            document.getElementById('lat').value = position.coords.latitude;
-            document.getElementById('lng').value = position.coords.longitude;
-            jsonOutput.innerText = "📍 Koordinat GPS browser berhasil diperbarui.";
-        }, function(error) {
-            jsonOutput.innerText = "❌ Gagal memuat GPS: " + error.message;
-        });
-    } else {
-        jsonOutput.innerText = "❌ Browser Anda tidak mendukung Geolocation.";
+const val = (id) => document.getElementById(id).value.trim();
+
+function getTanggalHariIni() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function updateQrUrl() {
+    const unitId = val('qrUnitId') || '31';
+    document.getElementById('qrFullUrl').value = `https://presensi.baritotimurkab.go.id/get_qr/${unitId}`;
+}
+
+function updatePreviewQr() {
+    const tglStr = getTanggalHariIni();
+    let hash = val('qrHash');
+    if (/^\d{4}-\d{2}-\d{2}/.test(hash)) {
+        hash = hash.slice(10);
+        document.getElementById('qrHash').value = hash;
+    }
+    document.getElementById('displayTanggal').textContent = tglStr;
+    document.getElementById('autoTanggal').value = tglStr;
+    document.getElementById('qrInPreview').value = `${tglStr}${hash}`;
+    document.getElementById('qrOutPreview').value = `${tglStr}${hash}`;
+}
+
+function sinkronTanggalOtomatis() {
+    const now = new Date();
+    updatePreviewQr();
+    if (!document.getElementById('bulan').value) {
+        document.getElementById('bulan').value = now.getMonth() + 1;
+    }
+    if (!document.getElementById('tahun').value) {
+        document.getElementById('tahun').value = now.getFullYear();
     }
 }
 
-function dapatkanHeader() {
-    return {
-        "Content-Type": "application/json", 
-        "Accept": "application/json", 
-        "user-agent": "Dart/3.9 (dart:io)",
-        "x-install-id": document.getElementById("installId").value.trim(), 
-        "x-device-platform": "android",
-        "x-app-installer": "com.android.vending", 
-        "x-app-package": "com.digitalnative.atei_bartim",
-        "Authorization": "Bearer " + document.getElementById("apiToken").value.trim(),
-        "x-device-id": document.getElementById("deviceId").value.trim()
-    };
+sinkronTanggalOtomatis();
+
+function pakaiDeviceAndroid() {
+    document.getElementById('deviceId').value = '40622cf44ad36bb1';
+    log('🔄 x-device-id diubah ke ID Android: 40622cf44ad36bb1');
 }
 
-async function prosesAutoBypass() {
-    const jsonOutput = document.getElementById('jsonOutput');
-    const statusOutput = document.getElementById('statusOutput');
-    const lat = document.getElementById('lat').value.trim();
-    const lng = document.getElementById('lng').value.trim();
-    const uid = document.getElementById('userId').value.trim();
-    const statusAbsen = document.getElementById('absenStatus').value; // Mengambil data pilihan dropdown
-    
-    statusOutput.style.display = "none";
-    jsonOutput.innerText = `[Langkah 1/2] Mengirimkan verifikasi lokasi (${statusAbsen.toUpperCase()}) ke server BKD...`;
+function pakaiDeviceWeb() {
+    document.getElementById('deviceId').value = val('webDeviceId');
+    log(`🔄 x-device-id diubah ke ID Web: ${val('webDeviceId')}`);
+}
+
+function salinScriptConsole() {
+    const unitId = val('qrUnitId') || '31';
+    const script = `fetch('/get_qr/${unitId}').then(r=>r.text()).then(t=>{const m=t.match(/\d{4}-\d{2}-\d{2}[a-zA-Z0-9]{8,20}/);const h=m?m[0]:t.trim();navigator.clipboard?.writeText(h);alert('Token QR Tersalin:\n'+h);});`;
+    navigator.clipboard?.writeText(script);
+    log(`📋 Script Console tersalin ke clipboard!
+1. Buka tab presensi.baritotimurkab.go.id (setelah login)
+2. Tempel di DevTools Console lalu tekan Enter
+3. Kembali ke sini dan klik "Tempel Token QR dari Clipboard".`);
+}
+
+async function tempelQrClipboard() {
+    try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+            document.getElementById('qrHash').value = text.trim();
+            updatePreviewQr();
+            log(`✅ Token QR dari clipboard diterapkan: ${val('qrInPreview')}`);
+        }
+    } catch (e) {
+        log(`⚠️ Gagal membaca clipboard otomatis. Silakan tempel manual pada kolom "Token Hash QR".`);
+    }
+}
+
+function log(msg) {
+    const box = document.getElementById('consoleBox');
+    box.textContent += `
+
+[${new Date().toLocaleTimeString()}] ${msg}`;
+    box.scrollTop = box.scrollHeight;
+}
+
+function clearConsole() {
+    document.getElementById('consoleBox').textContent = 'Konsol dibersihkan...';
+}
+
+function getHeaders(withAuth = true) {
+    const headers = {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+        'x-device-platform': 'android',
+        'x-app-package': 'com.digitalnative.atei_bartim',
+        'x-app-installer': 'com.android.vending',
+        'x-device-id': val('deviceId'),
+        'x-install-id': val('installId')
+    };
+    if (withAuth) {
+        headers['Authorization'] = `Bearer ${val('bearerToken')}`;
+    }
+    return headers;
+}
+
+async function callApi(method, path, body = null, withAuth = true) {
+    const url = `${val('baseUrl').replace(/\/$/, '')}${path}`;
+    log(`➡️ ${method} ${url}` + (body ? `
+Payload: ${JSON.stringify(body)}` : ''));
 
     try {
-        const resLoc = await fetch("https://api-absen.baritotimurkab.go.id/public/api/user/verifikasi_loc", {
-            method: 'POST',
-            headers: dapatkanHeader(),
-            body: JSON.stringify({ 
-                "id": parseInt(uid),
-                "latitude": lat.toString(), 
-                "longitude": lng.toString() 
-            })
-        });
+        const options = {
+            method: method,
+            headers: getHeaders(withAuth)
+        };
+        if (body && method !== 'GET') {
+            options.body = JSON.stringify(body);
+        }
 
-        const txtLoc = await resLoc.text();
-        let statusLocSukses = false;
+        const res = await fetch(url, options);
+        const text = await res.text();
         
+                let formatted = text;
         try {
-            const jsonLoc = JSON.parse(txtLoc);
-            if (resLoc.ok) {
-                statusLocSukses = true;
-                jsonOutput.innerText = `[Langkah 1 Sukses] Lokasi dikunci oleh server.\n\nRespons Server:\n${JSON.stringify(jsonLoc, null, 2)}\n\n[Langkah 2/2] Menarik kode token QR untuk status: ${statusAbsen.toUpperCase()}...`;
-            } else {
-                jsonOutput.innerText = `[Langkah 1 Gagal] Server menolak permintaan:\n${JSON.stringify(jsonLoc, null, 2)}`;
-                statusOutput.style.display = "inline-block";
-                statusOutput.className = "badge error";
-                statusOutput.innerText = `HTTP ${resLoc.status}`;
-                return;
+            const parsed = JSON.parse(text);
+            formatted = JSON.stringify(parsed, null, 2);
+            if (parsed && parsed.data && parsed.data.lat && parsed.data.long) {
+                document.getElementById('lat').value = parsed.data.lat;
+                document.getElementById('lng').value = parsed.data.long;
+                log(`🏢 Koordinat kantor otomatis diterapkan: ${parsed.data.lat}, ${parsed.data.long}`);
             }
-        } catch(e) {
-            jsonOutput.innerText = `[Langkah 1 Respon Eror Server]:\n${txtLoc}\n\n💡 Catatan: Jika memunculkan Server Error 500 di luar jam kerja, sistem server backend BKD sedang menolak akses masuk karena jadwal absen belum aktif.`;
-            statusOutput.style.display = "inline-block";
-            statusOutput.className = "badge error";
-            statusOutput.innerText = `HTTP ${resLoc.status}`;
-            return;
-        }
+        } catch (e) {}
 
-        if (statusLocSukses) {
-            // MENYUNTIKKAN PARAMETER QUERY DARI DROPDOWN SECARA OTOMATIS
-            const resQr = await fetch(`https://api-absen.baritotimurkab.go.id/public/api/user/generate-token-qr?status=${statusAbsen}`, { 
-                method: 'GET', 
-                headers: dapatkanHeader() 
-            });
-
-            statusOutput.style.display = "inline-block";
-            statusOutput.innerText = `HTTP: ${resQr.status}`;
-            statusOutput.className = resQr.ok ? "badge success" : "badge error";
-
-            const txtQr = await resQr.text();
-            try { 
-                const jsonQr = JSON.parse(txtQr);
-                jsonOutput.innerText = `[Urutan Selesai] Hasil Struktur Data QR:\n\n${JSON.stringify(jsonQr, null, 2)}`;
-                if (jsonQr.data === null) {
-                    statusOutput.className = "badge info";
-                    statusOutput.innerText = "HTTP 200 (Data Null)";
-                    jsonOutput.innerText += `\n\n💡 ANALISIS: Validasi perangkat & lokasi sukses. Data QR berstatus null karena jam presensi ${statusAbsen} belum dibuka secara penuh oleh sistem BKD setempat, atau ada kemungkinan selisih waktu 1-3 menit dengan jam server pusat.`;
-                }
-            } catch(e) { 
-                jsonOutput.innerText = `[Langkah 2 Respon Non-JSON]:\n${txtQr}`; 
-            }
-        }
-
+                log(`⬅️ HTTP ${res.status} ${res.statusText}\n${formatted}`);
     } catch (err) {
-        statusOutput.style.display = "inline-block";
-        statusOutput.className = "badge error";
-        statusOutput.innerText = "Koneksi Terputus";
-        jsonOutput.innerText = `❌ Terjadi kesalahan jaringan internal atau CORS policy: ${err.message}`;
+        log(`❌ Error Jaringan / CORS Browser: ${err.message}`);
     }
 }
+
+
+function verifikasiLokasi() {
+    callApi('POST', '/user/verifikasi_loc', {
+        id: parseInt(val('userId')),
+        latitude: val('lat'),
+        longitude: val('lng')
+    });
+}
+
+function kirimQrIn() {
+    updatePreviewQr();
+    callApi('POST', '/user/qr_in', {
+        qr_in: `${getTanggalHariIni()}${val('qrHash')}`,
+        id: parseInt(val('userId'))
+    });
+}
+
+function kirimQrOut() {
+    updatePreviewQr();
+    callApi('POST', '/user/qr_out', {
+        qr_out: `${getTanggalHariIni()}${val('qrHash')}`,
+        id: parseInt(val('userId'))
+    });
+}
+
+function cekToday() {
+    callApi('POST', '/user/get_today', { id: parseInt(val('userId')) });
+}
+
+function cekProfil() {
+    callApi('GET', `/user/${val('userId')}`);
+}
+async function loginAmbilToken() {
+    const nikInput = prompt("Masukkan NIK Anda:", "");
+    const passInput = prompt("Masukkan Password Akun ATEI:");
+    if (!nikInput || !passInput) return;
+
+    const payload = {
+        nik: nikInput,
+        password: passInput,
+        device_id: val('deviceId')
+    };
+
+    const variasiRute = [
+        '/signin',
+        '/authenticate',
+        '/user/signin',
+        '/user/auth',
+        '/v1/login',
+        '/v3/login',
+        '/api/login'
+    ];
+
+    for (const rute of variasiRute) {
+        await callApi('POST', rute, payload, false);
+    }
+}
+
+
+
+function cekVersi() {
+    callApi('GET', '/version', null, false);
+}
+
+function cekRekap() {
+    callApi('POST', `/user/rekap/${val('userId')}`, {
+        month: parseInt(val('bulan')),
+        year: parseInt(val('tahun'))
+    });
+}
+
+function cekTpp() {
+    callApi('GET', `/user/get_tpp/${val('userId')}/${val('bulan')}/${val('tahun')}`);
+}
+
+function ambilGpsAsli() {
+    if (!navigator.geolocation) {
+        log('❌ Browser tidak mendukung Geolocation.');
+        return;
+    }
+    log('⏳ Mengambil koordinat GPS perangkat...');
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            document.getElementById('lat').value = pos.coords.latitude.toFixed(6);
+            document.getElementById('lng').value = pos.coords.longitude.toFixed(6);
+            log(`✅ Koordinat diperbarui: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`);
+        },
+        (err) => log(`❌ Gagal mengambil GPS: ${err.message}`)
+    );
+}
+function cekRekapV2() {
+    const sekarang = new Date();
+    const yyyy = sekarang.getFullYear();
+    const mm = String(sekarang.getMonth() + 1).padStart(2, '0');
+    const tanggalAwalBulan = `${yyyy}-${mm}-01`;
+
+    callApi('POST', '/user/get_rekap_bulanan_v2', {
+        id: parseInt(val('userId')),
+        date: tanggalAwalBulan
+    });
+}
+
+function generateTokenQr() {
+    callApi('GET', '/user/generate-token-qr', {
+        id: parseInt(val('userId'))
+    });
+}
+
+// 1. Fungsi Cek Status Harian (Ditambahkan Header Perangkat)
+async function cekStatusHariIni() {
+    log("⏳ Memeriksa status presensi hari ini...");
+    try {
+        // Mengambil Device ID dari kolom input paling atas di dashboard Anda
+        const deviceId = document.getElementById('x-install-id') ? document.getElementById('x-install-id').value : val('installId');
+        const URL_LENGKAP = `'https://presensi.baritotimurkab.go.id`;
+        
+        const respons = await fetch(URL_LENGKAP, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'x-install-id': deviceId // Menyertakan ID perangkat agar server mau merespons
+            }
+        });
+        const hasilJson = await respons.json();
+        alert(`Respons Server [${respons.status}]:\n${JSON.stringify(hasilJson, null, 2)}`);
+    } catch (error) {
+        alert(`❌ Gagal terhubung ke server!\nDetail: ${error.message}\n\nTips: Buka tab web presensi utama dulu agar sesinya aktif.`);
+    }
+}
+
+// 2. Fungsi Cek Riwayat Kehadiran (Ditambahkan Header Perangkat)
+async function cekRiwayatKehadiran() {
+    log("⏳ Menarik log riwayat kehadiran...");
+    try {
+        const deviceId = document.getElementById('x-install-id') ? document.getElementById('x-install-id').value : val('installId');
+        const URL_LENGKAP = `'https://presensi.baritotimurkab.go.id`;
+        
+        const respons = await fetch(URL_LENGKAP, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'x-install-id': deviceId // Menyertakan ID perangkat agar server mau merespons
+            }
+        });
+        const hasilJson = await respons.json();
+        alert(`Respons Server [${respons.status}]:\n${JSON.stringify(hasilJson, null, 2)}`);
+    } catch (error) {
+        alert(`❌ Gagal terhubung ke server!\nDetail: ${error.message}`);
+    }
+}
+   // Fungsi Tambahan untuk Cek Validitas Sesi Perangkat
+async function cekSesiPerangkat() {
+    log("⏳ Memeriksa sesi perangkat ke server...");
+    try {
+        const idPegawai = val('userId') ? val('userId') : "2682";
+        const URL_LENGKAP = 'https://api-absen.baritotimurkab.go.id/public/api/user/' + idPegawai;
+        
+        const respons = await fetch(URL_LENGKAP, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        const hasilJson = await respons.json();
+        alert(`Respons Sesi [${respons.status}]:\n${JSON.stringify(hasilJson, null, 2)}`);
+    } catch (error) {
+        alert(`❌ Gagal terhubung ke server!\nDetail: ${error.message}`);
+        // ... (kode-kode fungsi Anda sebelumnya, seperti cekSesiPerangkat atau sinkronTanggalOtomatis) ...
+  
+        }
+sinkronTanggalOtomatis();
+  var urlParams = new URLSearchParams(window.location.search);
+  var qrFromUrl = urlParams.get('qr');
+  if (qrFromUrl) {
+    setVal('qrHash', qrFromUrl.trim());
+    updatePreviewQr();
+    log('Token QR otomatis diterima dari URL: ' + qrFromUrl.trim());
+    // Jalankan otomatis saat halaman pertama kali dibuka
+generateWaktuAcak();
+    }
+  }
 </script>
+<script>
+  window.ipPublikGlobal = "Mengambil IP...";
+
+  function setIPKonsol(ipBaru) {
+    window.ipPublikGlobal = ipBaru;
+    const baris = document.getElementById('baris-ip-tunggal');
+    if (baris) {
+      baris.textContent = '[INFO] Alamat IP Publik: ' + ipBaru;
+    }
+  }
+
+  function pasangWadahIP() {
+    if (document.getElementById('baris-ip-tunggal')) return;
+    const semua = document.querySelectorAll('pre, code, div, p');
+    for (let i = semua.length - 1; i >= 0; i--) {
+      const el = semua[i];
+      const teks = el.textContent || '';
+      if (
+        (teks.includes('Siap. Gunakan tombol') || teks.includes('Konsol dibersihkan')) &&
+        el.offsetHeight >= 40 &&
+        el.offsetHeight <= 350
+      ) {
+        const div = document.createElement('div');
+        div.id = 'baris-ip-tunggal';
+        div.style.cssText = 'color:#38bdf8; margin-top:10px; font-weight:bold;';
+        div.textContent = '[INFO] Alamat IP Publik: ' + window.ipPublikGlobal;
+        el.appendChild(div);
+        break;
+      }
+    }
+  }
+
+  // Callback untuk JSONP ipify
+  function terimaIPJsonp(data) {
+    if (data && data.ip) {
+      setIPKonsol(data.ip);
+    }
+  }
+
+  // Cadangan menggunakan fetch jika JSONP tertahan
+  async function cadanganFetchIP() {
+    await new Promise(r => setTimeout(r, 2000));
+    if (window.ipPublikGlobal !== "Mengambil IP...") return;
+    try {
+      const host = "api." + "ipify.org";
+      const res = await fetch("https://" + host + "/?format=json");
+      const json = await res.json();
+      if (json && json.ip) setIPKonsol(json.ip);
+    } catch (e) {
+      setIPKonsol("Gagal memuat (Buka lewat Chrome / GitHub Pages)");
+    }
+  }
+
+  pasangWadahIP();
+  setInterval(pasangWadahIP, 1000);
+  cadanganFetchIP();
+    // Cek ulang IP setiap 5 detik agar otomatis update saat gonta-ganti VPN
+setInterval(async function() {
+  try {
+    const host = "api." + "ipify.org";
+    const res = await fetch("https://" + host + "/?format=json");
+    const json = await res.json();
+    if (json && json.ip && json.ip !== window.ipPublikGlobal) {
+      setIPKonsol(json.ip);
+    }
+  } catch (e) {}
+}, 5000);
+</script>
+<script src="https://ipify.org"></script>
+
+</script>
+
+
 </body>
 </html>
